@@ -12,3 +12,30 @@ data/
 
 # IDE
 .idea/
+
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# Data files
+data/
+*.csv
+
+# IDE
+.idea/
+.vscode/
+
+# Airflow
+airflow.db
+airflow.cfg
+webserver_config.py
+logs/
+
+# OS
+.DS_Store

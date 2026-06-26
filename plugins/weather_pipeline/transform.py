@@ -1,8 +1,10 @@
 import json
-import os
+import logging
 import pandas as pd
 from pathlib import Path
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 # 1. Dynamically find the project root
 # Path(__file__) is this current file; .parent.parent moves up to the project folder
@@ -48,8 +50,11 @@ def create_data_frame(raw_data):
     df = pd.DataFrame(new_data_list)
 
     df['timestamp'] = pd.to_datetime(df['timestamp'])
+    before = len(df)
     df = df.dropna().copy()
-
+    dropped = before - len(df)
+    if dropped:
+        logger.warning(f"Dropped {dropped} rows with missing values")
     return df
 
 def transform_main():
@@ -70,12 +75,11 @@ def transform_main():
         raise ValueError(f"Error decoding JSON: {e}")
 
     weather_dataframe = create_data_frame(all_weather_records)
-    #weather_dataframe.to_csv(file_path_clean_df, index=False)
 
-    print(weather_dataframe.head())
-    print(weather_dataframe.dtypes)
-    # Check to see if there are any missing values
-    print(weather_dataframe.isnull().sum())
+    if weather_dataframe is None or weather_dataframe.empty:
+        raise ValueError("No valid weather records to transform.")
+
+    logger.info(f"Transformed {len(weather_dataframe)} weather records")
 
     return weather_dataframe
 

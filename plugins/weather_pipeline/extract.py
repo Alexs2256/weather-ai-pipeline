@@ -1,13 +1,12 @@
-import requests
 import json
-import os
+import requests
 from pathlib import Path
 from datetime import datetime, timezone
-from dotenv import load_dotenv
+from plugins.weather_pipeline.settings import settings
 
-load_dotenv()
+#sudo docker start postgres-weather
 
-API_KEY = os.getenv("API_KEY")
+API_KEY = settings.api_key
 
 if not API_KEY:
     raise ValueError("API_KEY not set in environment")
@@ -18,7 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
 
 file_path_data = DATA_DIR / "weather_raw.jsonl"
-
 
 def get_weather_data(city, api_key):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -43,9 +41,6 @@ def get_weather_data(city, api_key):
     
 def extract_main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    #Remove old file to makeway for new data
-    #if os.path.exists(file_path_data):
-        #os.remove(file_path_data)
     with open(file_path_data, 'w') as f:
         for city in CITY_NAME:
             raw_data = get_weather_data(city, API_KEY)
