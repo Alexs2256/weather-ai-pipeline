@@ -26,7 +26,7 @@ OpenWeatherMap API
        └──► Streamlit Dashboard ──► Live weather cards, alerts, multilingual TTS
 ```
 
-Orchestrated end-to-end by **Apache Airflow** on an hourly schedule.
+Orchestrated end-to-end by **Apache Airflow** scheduled every 2 hours.
 
 ---
 
