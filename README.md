@@ -201,7 +201,14 @@ Alerts are generated automatically based on metric thresholds:
 
 ---
 
-## 📸 Screenshots
+## 📸 Demo
+
+### Dashboard Walkthrough
+[![Dashboard Demo](https://img.youtube.com/vi/dSxq2k3dFm0/0.jpg)](https://www.youtube.com/watch?v=dSxq2k3dFm0)
+
+### API Demo
+[![API Demo](https://img.youtube.com/vi/EBHU5T5EppQ/0.jpg)](https://www.youtube.com/watch?v=EBHU5T5EppQ)
+This renders as a clickable thumbnail on GitHub instead of a bare URL.
 
 ### Dashboard
 ![Dashboard](screenshots/dashboard.png)
