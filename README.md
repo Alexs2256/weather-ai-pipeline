@@ -191,7 +191,7 @@ Alerts are generated automatically based on metric thresholds:
 | Alert | Condition |
 |---|---|
 | 🔴 Heat Warning | Temp > 35°C |
-| 🔴 EXTREME HEAT WARNING ISSUED | Temp > 35°C + Humidity > 80% |
+| 🔴 Extreme Heat Warning | Temp > 35°C + Humidity > 80% |
 | 🔴 Fire Weather Warning | Temp > 35°C + Wind > 20mph + Humidity < 25% |
 | 🔴 Blizzard Warning | Temp < 0°C + Wind > 35mph |
 | 🟠 Frost Warning | Temp < 0°C |
