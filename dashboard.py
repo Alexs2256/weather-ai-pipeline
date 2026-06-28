@@ -1,4 +1,5 @@
 import logging
+import json
 import psycopg2
 import pytz
 import streamlit as st
@@ -72,7 +73,6 @@ def format_timestamp(ts, timezone_str):
 
 def speak_summary(text: str, city: str):
     """Renders a TTS button using the browser's built-in speechSynthesis API."""
-    # Strip markdown bold markers so they aren't read aloud
 
     if city == 'Tokyo' or city == 'Berlin':
         foreign_clean_text = text[0].replace("**", "").replace("`", "'")
@@ -80,34 +80,36 @@ def speak_summary(text: str, city: str):
     else:
         foreign_clean_text = ""
         clean_text = text.replace("**", "").replace("`", "'")
-    
-    components.html(f"""
-        <button onclick="
+
+    foreign_js = json.dumps(foreign_clean_text)
+    clean_js = json.dumps(clean_text)
+    lang = "ja-JP" if city == "Tokyo" else "de-DE"
+
+    html = f"""
+    <button id="speak-btn-{city}" style="background:#1f77b4; color:white; border:none; padding:8px 16px;
+               border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
+        🔊 Read {city} Summary
+    </button>
+    <button onclick="window.speechSynthesis.cancel();"
+        style="background:#555; color:white; border:none; padding:8px 16px;
+               border-radius:8px; cursor:pointer; font-size:14px;">
+        ⏹ Stop
+    </button>
+    <script>
+        document.getElementById('speak-btn-{city}').addEventListener('click', function() {{
             window.speechSynthesis.cancel();
-            if ('{city}' == 'Tokyo') {{
-            var u = new SpeechSynthesisUtterance(`{foreign_clean_text}`);
-            u.lang = 'ja-JP';  // Japanese
-            window.speechSynthesis.speak(u);
+            if ({foreign_js} !== "") {{
+                var uF = new SpeechSynthesisUtterance({foreign_js});
+                uF.lang = '{lang}';
+                window.speechSynthesis.speak(uF);
             }}
-            else if ('{city}' == 'Berlin') {{
-            var u = new SpeechSynthesisUtterance(`{foreign_clean_text}`);
-            u.lang = 'de-DE'; // German
-            window.speechSynthesis.speak(u);
-            }}
-            var u = new SpeechSynthesisUtterance(`{clean_text}`);
-            window.speechSynthesis.speak(u);
-            
-        "
-            style="background:#1f77b4; color:white; border:none; padding:8px 16px;
-                   border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
-            🔊 Read {city} Summary
-        </button>
-        <button onclick="window.speechSynthesis.cancel();"
-            style="background:#555; color:white; border:none; padding:8px 16px;
-                   border-radius:8px; cursor:pointer; font-size:14px;">
-            ⏹ Stop
-        </button>
-    """, height=50)
+            var uE = new SpeechSynthesisUtterance({clean_js});
+            window.speechSynthesis.speak(uE);
+        }});
+    </script>
+    """
+
+    components.html(html, height=50)
 
 
 def render_city_card(record: dict, summaries: dict[str, str], cursor):

@@ -93,11 +93,13 @@ def get_weather_alert(metrics: list[float], cursor):
     alerts = []
     
     if temp > 35:
-        alerts.append("High temperatures, HEAT WARNING ISSUED")
+        alerts.append("High temperatures, HEAT ADVISORY ALERT ISSUED")
         if wind_speed >= 20 and humidity <= 25 and temp > 35:
                 alerts.append("High winds, low humidity and high temperatures, FIRE WEATHER WARNING ISSUED")
         if humidity > 80:
             alerts.append("Heat stroke is highly likely with any prolonged outdoor exposure, EXTREME HEAT WARNING ISSUED")
+    elif temp > 32:
+        alerts.append("HEAT WARNING, Temperatures are above average, pose health risks to vulnerable groups, like the elderly.")
     elif temp < 0:
         alerts.append("Freezing temperatures expected, FROST WARNING ISSUED")
         if temp < 0 and wind_speed >= 35:
