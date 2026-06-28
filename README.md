@@ -26,7 +26,7 @@ OpenWeatherMap API
        └──► Streamlit Dashboard ──► Live weather cards, alerts, multilingual TTS
 ```
 
-Orchestrated end-to-end by **Apache Airflow** on an hourly schedule.
+Orchestrated end-to-end by **Apache Airflow** scheduled every 2 hours.
 
 ---
 
@@ -191,6 +191,7 @@ Alerts are generated automatically based on metric thresholds:
 | Alert | Condition |
 |---|---|
 | 🔴 Heat Warning | Temp > 35°C |
+| 🔴 Extreme Heat Warning | Temp > 35°C + Humidity > 80% |
 | 🔴 Fire Weather Warning | Temp > 35°C + Wind > 20mph + Humidity < 25% |
 | 🔴 Blizzard Warning | Temp < 0°C + Wind > 35mph |
 | 🟠 Frost Warning | Temp < 0°C |
@@ -200,7 +201,14 @@ Alerts are generated automatically based on metric thresholds:
 
 ---
 
-## 📸 Screenshots
+## 📸 Demo
+
+### Dashboard Walkthrough
+[![Dashboard Demo](https://img.youtube.com/vi/dSxq2k3dFm0/0.jpg)](https://www.youtube.com/watch?v=dSxq2k3dFm0)
+
+### API Demo
+[![API Demo](https://img.youtube.com/vi/EBHU5T5EppQ/0.jpg)](https://www.youtube.com/watch?v=EBHU5T5EppQ)
+This renders as a clickable thumbnail on GitHub instead of a bare URL.
 
 ### Dashboard
 ![Dashboard](screenshots/dashboard.png)
