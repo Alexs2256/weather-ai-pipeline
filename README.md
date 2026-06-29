@@ -204,7 +204,7 @@ Alerts are generated automatically based on metric thresholds:
 ## 📸 Demo
 
 ### Dashboard Walkthrough
-[![Dashboard Demo](https://img.youtube.com/vi/dSxq2k3dFm0/0.jpg)](https://www.youtube.com/watch?v=dSxq2k3dFm0)
+[![Airflow DAG Demo](https://img.youtube.com/vi/k_4H9EL21I4/0.jpg)](https://www.youtube.com/watch?v=k_4H9EL21I4)[![Dashboard Demo](https://img.youtube.com/vi/dSxq2k3dFm0/0.jpg)](https://www.youtube.com/watch?v=dSxq2k3dFm0)
 
 ### API Demo
 [![API Demo](https://img.youtube.com/vi/EBHU5T5EppQ/0.jpg)](https://www.youtube.com/watch?v=EBHU5T5EppQ)
