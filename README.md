@@ -209,8 +209,5 @@ Alerts are generated automatically based on metric thresholds:
 ### Heat Warning Example
 [![Heat Warning Example](https://img.youtube.com/vi/dSxq2k3dFm0/0.jpg)](https://www.youtube.com/watch?v=dSxq2k3dFm0)
 
-### API Demo
-[![API Demo](https://img.youtube.com/vi/EBHU5T5EppQ/0.jpg)](https://www.youtube.com/watch?v=EBHU5T5EppQ)
-
 ### Dashboard Screenshot
 ![Dashboard](screenshots/dashboard.png)
