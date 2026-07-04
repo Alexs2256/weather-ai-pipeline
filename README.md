@@ -206,5 +206,5 @@ Alerts are generated automatically based on metric thresholds:
 ### Airflow DAG
 [![Airflow DAG Demo](https://img.youtube.com/vi/k_4H9EL21I4/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_4H9EL21I4)
 
-### Heat Warning Example
+### 🔴 Heat Warning Example 
 [![Heat Warning Example](https://img.youtube.com/vi/kU50Ca5e394/0.jpg)](https://www.youtube.com/watch?v=kU50Ca5e394)
