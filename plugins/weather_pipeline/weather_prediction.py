@@ -5,8 +5,7 @@ import pytz
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
-from google.genai.errors import ServerError,ClientError
-from deep_translator import GoogleTranslator
+from google.genai.errors import ServerError, ClientError
 from plugins.weather_pipeline.settings import settings
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -20,10 +19,10 @@ LATEST_ALL_CITIES_SQL = """
 """
 
 CITY_TIMEZONES = {
-"London":   "Europe/London",
-"New York": "America/New_York",
-"Tokyo":    "Asia/Tokyo",
-"Berlin":   "Europe/Berlin",
+    "London":   "Europe/London",
+    "New York": "America/New_York",
+    "Tokyo":    "Asia/Tokyo",
+    "Berlin":   "Europe/Berlin",
 }
 
 DB_CONFIG = {
@@ -32,11 +31,11 @@ DB_CONFIG = {
     "user": settings.db_user,
     "password": settings.db_password,
     "port": settings.db_port,
-    # Updated to check for "neon" instead of "neon.tech"
     "sslmode": (
         "require" if "neon" in settings.db_host else "prefer"
     ),
 }
+
 # --- Pydantic Data Schemas ---
 class CityWeatherSummary(BaseModel):
     city: str
@@ -62,24 +61,22 @@ def extract_from_postgres() -> list[str]:
             with conn.cursor() as cursor:
                 cursor.execute(LATEST_ALL_CITIES_SQL)
                 rows = cursor.fetchall()
-                # Note: 'Saved summaries to postgres' log was removed from here 
-                # because this is the extraction step, not the load step.   
 
                 for city in rows:
-                    metrics=[city[0], city[1], city[2], city[3], city[4], city[5], city[6]]
+                    metrics = [city[0], city[1], city[2], city[3], city[4], city[5], city[6]]
                     
-                    alerts=get_weather_alert(metrics, cursor)
+                    alerts = get_weather_alert(metrics, cursor)
 
                     tz_str = CITY_TIMEZONES.get(city[0], "UTC")
                     formatted_time = format_timestamp(city[6], tz_str)
 
                     metrics_context = (
-                    f"City: {city[0]}, Temp: {city[1]}°C, "
-                    f"Humidity: {city[2]}%, Pressure: {city[3]}hPa, "
-                    f"Wind: {city[4]}mph, Description: {city[5]}," 
-                    f"Timestamp: {formatted_time},"
-                    f"Alerts: {', '.join(alerts) if alerts else 'None'}"
-            )
+                        f"City: {city[0]}, Temp: {city[1]}°C, "
+                        f"Humidity: {city[2]}%, Pressure: {city[3]}hPa, "
+                        f"Wind: {city[4]}mph, Description: {city[5]}, " 
+                        f"Timestamp: {formatted_time}, "
+                        f"Alerts: {', '.join(alerts) if alerts else 'None'}"
+                    )
 
                     all_cities.append(metrics_context)
 
@@ -98,7 +95,7 @@ def get_weather_alert(metrics: list[float], cursor):
     if temp > 35:
         alerts.append("High temperatures, HEAT ADVISORY ALERT ISSUED")
         if wind_speed >= 20 and humidity <= 25 and temp > 35:
-                alerts.append("High winds, low humidity and high temperatures, FIRE WEATHER WARNING ISSUED")
+            alerts.append("High winds, low humidity and high temperatures, FIRE WEATHER WARNING ISSUED")
         if humidity > 80:
             alerts.append("Heat stroke is highly likely with any prolonged outdoor exposure, EXTREME HEAT WARNING ISSUED")
     elif temp > 32:
@@ -115,19 +112,20 @@ def get_weather_alert(metrics: list[float], cursor):
     def get_severe_weather_alert(metrics: list[float]):
         current_pressure = metrics[3]
         query = """
-        SELECT city, pressure, timestamp 
-        FROM all_city_weather_data
-        WHERE city = %s 
-          AND timestamp >= NOW() - INTERVAL '3 hours'
-        ORDER BY timestamp ASC
-        LIMIT 1;
-    """
+            SELECT city, pressure, timestamp 
+            FROM all_city_weather_data
+            WHERE city = %s 
+              AND timestamp >= NOW() - INTERVAL '3 hours'
+            ORDER BY timestamp ASC
+            LIMIT 1;
+        """
         try:
             cursor.execute(query, (metrics[0],))
             result = cursor.fetchone()
             if result:
                 prev_pressure = result[1]
-            else: return 
+            else: 
+                return 
         except psycopg2.Error as e:
             logger.error("Database query error: %s", e)
             return None
@@ -136,7 +134,6 @@ def get_weather_alert(metrics: list[float], cursor):
             alerts.append('Drastic drop in pressure detected, STORM ALERT ISSUED')
 
     get_severe_weather_alert(metrics)
-
     return alerts
   
 MODEL_FALLBACKS = ["gemini-2.5-flash", "gemini-2.0-flash-lite"]
@@ -159,12 +156,12 @@ def transform_weather_with_gemini(metrics_context: list[str]) -> WeatherDescript
                         response_mime_type="application/json",
                         response_schema=WeatherDescription,
                         system_instruction=(
-                        "You are a weather reporter. Write a short, natural description based on the metrics. "
-                        "Show temperature in Fahrenheit and Celsius. "
-                        "For all cities, write the summary in English. "
-                        "Give any clothing or activity recommendations based on the weather."
-                        "If there is a weather alert, prioritize it, state the alert clearly and recommend safety precautions."
-    )    
+                            "You are a weather reporter. Write a short, natural description based on the metrics. "
+                            "Show temperature in Fahrenheit and Celsius. "
+                            "For all cities, write the summary entirely in English. "
+                            "Give any clothing or activity recommendations based on the weather. "
+                            "If there is a weather alert, prioritize it, state the alert clearly and recommend safety precautions."
+                        )    
                     )
                 )
                 return WeatherDescription.model_validate_json(response.text)
@@ -180,9 +177,9 @@ def transform_weather_with_gemini(metrics_context: list[str]) -> WeatherDescript
             except ClientError as e:
                 if e.code == 429:
                     logger.warning("Quota exceeded on %s, trying next model", model_name)
-                    break  # exit the attempt loop, move to the next model
+                    break 
                 logger.error("Gemini client error on %s: %s", model_name, e)
-                raise  # non-quota client errors (e.g. bad request) aren't worth retrying on another model
+                raise 
             
     raise RuntimeError("All Gemini model fallbacks exhausted")
 
@@ -194,8 +191,8 @@ def load_back_to_postgres(weather_description: WeatherDescription):
             with conn.cursor() as cursor:
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS gemini_prompt(
-                        city         VARCHAR(100),
-                        summary      TEXT,
+                        city        VARCHAR(100),
+                        summary     TEXT,
                         generated_at TIMESTAMP,
                         PRIMARY KEY (city, generated_at)        
                     )
