@@ -86,28 +86,32 @@ def format_timestamp(ts, timezone_str):
 def speak_summary(text: list[str], city: str):
     """Renders a TTS button using the browser's built-in speechSynthesis API."""
 
-    clean_text = text[1].replace("**", "").replace("`", "'")
+    if city == 'Tokyo' or city == 'Berlin':
+        clean_text = text[1].replace("**", "").replace("`", "'")
+    else:
+        clean_text = text.replace("**", "").replace("`", "'")
+
     clean_js = json.dumps(clean_text)
 
     html = f"""
     <button id="speak-btn-{city}" style="background:#1f77b4; color:white; border:none; padding:8px 16px;
-                border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
+               border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
         🔊 Read {city} Summary
     </button>
     <button onclick="window.speechSynthesis.cancel();"
         style="background:#555; color:white; border:none; padding:8px 16px;
-                border-radius:8px; cursor:pointer; font-size:14px;">
+               border-radius:8px; cursor:pointer; font-size:14px;">
         ⏹ Stop
     </button>
     <script>
         document.getElementById('speak-btn-{city}').addEventListener('click', function() {{
             window.speechSynthesis.cancel();
             var uE = new SpeechSynthesisUtterance({clean_js});
-            uE.lang = 'en-US';
             window.speechSynthesis.speak(uE);
         }});
     </script>
     """
+
     components.html(html, height=50)
 
 
