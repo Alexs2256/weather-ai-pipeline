@@ -5,12 +5,11 @@ import pytz
 import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
-from deep_translator import GoogleTranslator
 from plugins.weather_pipeline import pipeline
 from plugins.weather_pipeline.weather_prediction import get_weather_alert
-
-#source ~/airflow_venv/bin/activate
-#streamlit run projects/DataEngineerProj1/dashboard.py
+from plugins.weather_pipeline.weather_prediction import run_pipeline
+# source ~/airflow_venv/bin/activate
+# streamlit run projects/DataEngineerProj1/dashboard.py
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -83,30 +82,26 @@ def format_timestamp(ts, timezone_str):
         ts = pytz.utc.localize(ts)
     return ts.astimezone(tz).strftime("%Y-%m-%d %I:%M %p %Z")
 
-def speak_summary(text: list[str], city: str):
+def speak_summary(text: str, city: str):
     """Renders a TTS button using the browser's built-in speechSynthesis API."""
-
-    if city == 'Tokyo' or city == 'Berlin':
-        clean_text = text[1].replace("**", "").replace("`", "'")
-    else:
-        clean_text = text.replace("**", "").replace("`", "'")
-
+    clean_text = text.replace("**", "").replace("`", "'")
     clean_js = json.dumps(clean_text)
 
     html = f"""
     <button id="speak-btn-{city}" style="background:#1f77b4; color:white; border:none; padding:8px 16px;
-               border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
+                border-radius:8px; cursor:pointer; font-size:14px; margin-right:8px;">
         🔊 Read {city} Summary
     </button>
     <button onclick="window.speechSynthesis.cancel();"
         style="background:#555; color:white; border:none; padding:8px 16px;
-               border-radius:8px; cursor:pointer; font-size:14px;">
+                border-radius:8px; cursor:pointer; font-size:14px;">
         ⏹ Stop
     </button>
     <script>
         document.getElementById('speak-btn-{city}').addEventListener('click', function() {{
             window.speechSynthesis.cancel();
             var uE = new SpeechSynthesisUtterance({clean_js});
+            uE.lang = 'en-US';
             window.speechSynthesis.speak(uE);
         }});
     </script>
@@ -165,18 +160,17 @@ def render_city_card(record: dict, summaries: dict[str, str], cursor):
         rain_col.metric("🌤️", f"{record['description']}")
     
     CITY_TIMEZONES = {
-    "London":   "Europe/London",
-    "New York": "America/New_York",
-    "Tokyo":    "Asia/Tokyo",
-    "Berlin":   "Europe/Berlin",
-}
+        "London":   "Europe/London",
+        "New York": "America/New_York",
+        "Tokyo":    "Asia/Tokyo",
+        "Berlin":   "Europe/Berlin",
+    }
 
     tz_str = CITY_TIMEZONES.get(city, "UTC")
     formatted_time = format_timestamp(record['timestamp'], tz_str)
     st.caption(f"Last updated: {formatted_time}")
 
     # --- Weather Alerts ---
-    
     alerts = get_weather_alert([
         city,
         record["temperature"],
@@ -212,7 +206,6 @@ def render_city_card(record: dict, summaries: dict[str, str], cursor):
             line-height: 1.6;
         ">
             {summary}
-
         </div>
         """,
         unsafe_allow_html=True
@@ -231,6 +224,7 @@ def main():
         try:
             with st.spinner("Executing weather pipeline..."):
                 pipeline.run_pipeline()
+                run_pipeline() #Runs the weather prediction
             st.success("Pipeline executed successfully!")
         except Exception as e:
             st.error(f"Pipeline execution failed: {e}")
