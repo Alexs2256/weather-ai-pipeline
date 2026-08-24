@@ -161,8 +161,7 @@ def transform_weather_with_gemini(metrics_context: list[str]) -> WeatherDescript
                         system_instruction=(
                         "You are a weather reporter. Write a short, natural description based on the metrics. "
                         "Show temperature in Fahrenheit and Celsius. "
-                        "For Berlin, write summary_native in German. For Tokyo, write summary_native in Japanese. "
-                        "For all other cities, write summary in English. "
+                        "For all cities, write the summary in English. "
                         "Give any clothing or activity recommendations based on the weather."
                         "If there is a weather alert, prioritize it, state the alert clearly and recommend safety precautions."
     )    
