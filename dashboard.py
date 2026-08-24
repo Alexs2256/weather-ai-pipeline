@@ -15,13 +15,25 @@ from plugins.weather_pipeline.weather_prediction import get_weather_alert
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-DB_CONFIG = {
-    "host":     settings.db_host,
-    "dbname":   settings.db_name,
-    "user":     settings.db_user,
-    "password": settings.db_password,
-    "port":     settings.db_port,
-}
+# Handle both local development and Streamlit Cloud secrets seamlessly
+if "DB_HOST" in st.secrets:
+    DB_CONFIG = {
+        "host": st.secrets["DB_HOST"],
+        "dbname": st.secrets["DB_NAME"],
+        "user": st.secrets["DB_USER"],
+        "password": st.secrets["DB_PASSWORD"],
+        "port": st.secrets["DB_PORT"],
+        "sslmode": "require",
+    }
+else:
+    DB_CONFIG = {
+        "host": settings.db_host,
+        "dbname": settings.db_name,
+        "user": settings.db_user,
+        "password": settings.db_password,
+        "port": settings.db_port,
+        "sslmode": "require" if "neon" in settings.db_host else "prefer",
+    }
 
 LATEST_ALL_CITIES_SQL = """
     SELECT DISTINCT ON (city)

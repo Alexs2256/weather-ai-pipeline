@@ -11,11 +11,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 csv_path = BASE_DIR / "data" / "cleaned_df.csv"
 
 DB_CONFIG = {
-    "host":     settings.db_host,
-    "dbname":   settings.db_name,
-    "user":     settings.db_user,
+    "host": settings.db_host,
+    "dbname": settings.db_name,
+    "user": settings.db_user,
     "password": settings.db_password,
-    "port":     settings.db_port,
+    "port": settings.db_port,
+    # Updated to check for "neon" instead of "neon.tech"
+    "sslmode": (
+        "require" if "neon" in settings.db_host else "prefer"
+    ),
 }
 
 def load_data_to_postgres(dataFrame):
