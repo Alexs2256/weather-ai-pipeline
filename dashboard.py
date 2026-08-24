@@ -197,10 +197,6 @@ def render_city_card(record: dict, summaries: dict[str, str], cursor):
 
     summary = summaries.get(city, "No summary available.")
 
-    if city == 'Tokyo' or city == 'Berlin':
-        summary = summary  + ' English Translation: ' + GoogleTranslator(source='auto', target='en').translate(summaries.get(city, "No summary available."))
-                                    
-
     st.markdown(
         f"""
         <div style="
@@ -221,9 +217,6 @@ def render_city_card(record: dict, summaries: dict[str, str], cursor):
         """,
         unsafe_allow_html=True
     )
-
-    if city == 'Tokyo' or city == 'Berlin':
-        summary = summary.split(' English Translation: ')
 
     speak_summary(summary, city)
     st.divider()
