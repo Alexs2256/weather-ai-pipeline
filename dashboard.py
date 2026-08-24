@@ -86,16 +86,9 @@ def format_timestamp(ts, timezone_str):
 def speak_summary(text: str, city: str):
     """Renders a TTS button using the browser's built-in speechSynthesis API."""
 
-    if city == 'Tokyo' or city == 'Berlin':
-        foreign_clean_text = text[0].replace("**", "").replace("`", "'")
-        clean_text = text[1].replace("**", "").replace("`", "'")
-    else:
-        foreign_clean_text = ""
-        clean_text = text.replace("**", "").replace("`", "'")
+    clean_text = text.replace("**", "").replace("`", "'")
 
-    foreign_js = json.dumps(foreign_clean_text)
     clean_js = json.dumps(clean_text)
-    lang = "ja-JP" if city == "Tokyo" else "de-DE"
 
     html = f"""
     <button id="speak-btn-{city}" style="background:#1f77b4; color:white; border:none; padding:8px 16px;
@@ -110,17 +103,11 @@ def speak_summary(text: str, city: str):
     <script>
         document.getElementById('speak-btn-{city}').addEventListener('click', function() {{
             window.speechSynthesis.cancel();
-            if ({foreign_js} !== "") {{
-                var uF = new SpeechSynthesisUtterance({foreign_js});
-                uF.lang = '{lang}';
-                window.speechSynthesis.speak(uF);
-            }}
             var uE = new SpeechSynthesisUtterance({clean_js});
             window.speechSynthesis.speak(uE);
         }});
     </script>
     """
-
     components.html(html, height=50)
 
 
