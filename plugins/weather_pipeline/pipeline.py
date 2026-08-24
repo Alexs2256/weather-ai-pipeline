@@ -4,7 +4,7 @@ from .load import load_data_to_postgres
 
 def run_pipeline():
     raw_data = extract_main()
-    clean_data = transform_main(raw_data)
+    clean_data = transform_main()
     load_data_to_postgres(clean_data)
 
 if __name__ == "__main__":
