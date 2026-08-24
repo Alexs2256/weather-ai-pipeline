@@ -6,7 +6,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from pathlib import Path
 from deep_translator import GoogleTranslator
-from plugins.weather_pipeline.settings import settings
+from plugins.weather_pipeline import pipeline
 from plugins.weather_pipeline.weather_prediction import get_weather_alert
 
 #source ~/airflow_venv/bin/activate
@@ -244,6 +244,12 @@ def main():
 
     if st.button("🔄 Refresh Data"):
         st.cache_data.clear()
+        try:
+            with st.spinner("Executing weather pipeline..."):
+                pipeline.run_pipeline()
+            st.success("Pipeline executed successfully!")
+        except Exception as e:
+            st.error(f"Pipeline execution failed: {e}")
 
     try:
         records = fetch_latest_records()
