@@ -1,5 +1,6 @@
 # 🌤️ Weather AI Pipeline
 
+[![Live Demo](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)]([https://share.streamlit.io](https://weather-ai-pipeline-qhr9ghvc5zcefnmgqyuz7p.streamlit.app/))  
 An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard.
 
 ---
