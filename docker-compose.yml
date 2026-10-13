@@ -1,0 +1,54 @@
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    command: standalone
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PYTHONPATH: /app
+      AIRFLOW__CORE__DAGS_FOLDER: /app/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+    volumes:
+      - .:/app:ro
+      - ./data:/app/data
+      - airflow_home:/opt/airflow
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PYTHONPATH: /app
+    working_dir: /app
+    volumes:
+      - .:/app:ro
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    command: streamlit run dashboard.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PYTHONPATH: /app
+    working_dir: /app
+    volumes:
+      - .:/app:ro
+      - ./data:/app/data
+    ports:
+      - "8501:8501"
+
+volumes:
+  airflow_home:

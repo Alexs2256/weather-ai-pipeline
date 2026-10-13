@@ -38,4 +38,4 @@ webserver_config.py
 logs/
 
 # OS
-.DS_Store
+.DS_Store.streamlit/

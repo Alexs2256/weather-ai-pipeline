@@ -15,7 +15,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 # Handle both local development and Streamlit Cloud secrets seamlessly
-if "DB_HOST" in st.secrets:
+try:
+    _use_st_secrets = "DB_HOST" in st.secrets
+except Exception:
+    _use_st_secrets = False
+
+if _use_st_secrets:
     DB_CONFIG = {
         "host": st.secrets["DB_HOST"],
         "dbname": st.secrets["DB_NAME"],
@@ -25,6 +30,7 @@ if "DB_HOST" in st.secrets:
         "sslmode": "require",
     }
 else:
+    from plugins.weather_pipeline.settings import settings
     DB_CONFIG = {
         "host": settings.db_host,
         "dbname": settings.db_name,
