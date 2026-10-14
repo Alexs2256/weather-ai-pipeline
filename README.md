@@ -1,9 +1,8 @@
 # 🌤️ Weather AI Pipeline
 
-[![Live Demo](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://weather-ai-pipeline-qhr9ghvc5zcefnmgqyuz7p.streamlit.app/) 
+[![Live Demo](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://weather-ai-pipeline-qhr9ghvc5zcefnmgqyuz7p.streamlit.app/)
 
-An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard.
-An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard.
+An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard. Orchestrated with Apache Airflow and deployed on AWS EC2 with Docker Compose.
 
 ---
 
@@ -29,20 +28,33 @@ OpenWeatherMap API
        └──► Streamlit Dashboard ──► Live weather cards, alerts, multilingual TTS
 ```
 
-Orchestrated end-to-end by **Apache Airflow** scheduled every 2 hours.
+Orchestrated end-to-end by **Apache Airflow**, scheduled every 2 hours.
+
+### Deployment architecture
+
+```
+AWS EC2 (Linux, Docker Compose)
+  ├── Apache Airflow (scheduler + webserver) ──► runs the weather_etl DAG every 2 hours
+  ├── FastAPI service
+  └── Streamlit service
+          │
+          ▼
+  Managed PostgreSQL (Neon)  ◄── also used by the Streamlit Cloud live demo
+```
 
 ---
 
 ## ✨ Features
 
 - **ETL Pipeline** — Extracts live weather data from OpenWeatherMap for London, New York, Tokyo, and Berlin
-- **AI Summaries** — Google Gemini generates natural language weather reports, written in the local language first then translated to English
+- **AI Summaries** — Google Gemini generates natural language weather reports, written in the local language first then translated to English, with structured output validation (Pydantic) and automatic model fallback
 - **Weather Alert System** — Multi-signal detection for heat, frost, blizzard, fire weather, high winds, humidity, and storm conditions
 - **Storm Detection** — Pressure drop analysis over 3-hour historical windows to detect incoming storms
 - **FastAPI REST API** — Three endpoints to query current weather and AI summaries programmatically
 - **Streamlit Dashboard** — Live weather cards with country flags, condition icons, and alert banners
 - **Multilingual TTS** — Browser-based text-to-speech reads summaries in Japanese (Tokyo), German (Berlin), British English (London), and American English (New York)
-- **Docker** — PostgreSQL runs in a Docker container for easy setup
+- **Cloud deployment** — Airflow, FastAPI, and Streamlit run on an AWS EC2 Linux server using Docker Compose
+- **Docker** — PostgreSQL runs in a Docker container for easy local setup
 
 ---
 
@@ -52,10 +64,12 @@ Orchestrated end-to-end by **Apache Airflow** scheduled every 2 hours.
 |---|---|
 | Orchestration | Apache Airflow |
 | Data Source | OpenWeatherMap API |
-| Database | PostgreSQL (Docker) |
+| Database | PostgreSQL (Docker locally, Neon managed in the cloud) |
 | LLM | Google Gemini 2.5 Flash |
+| Validation | Pydantic |
 | API | FastAPI + Uvicorn |
 | Dashboard | Streamlit |
+| Cloud / Deployment | AWS EC2, Docker Compose |
 | Language | Python 3.10 |
 | Packaging | pyproject.toml |
 
@@ -83,7 +97,7 @@ weather-ai-pipeline/
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Local Setup
 
 ### Prerequisites
 - Python 3.10+
@@ -145,6 +159,7 @@ airflow users create \
 airflow scheduler &
 airflow webserver &
 ```
+> The `admin/admin` credentials are for local development only. Use a strong password on any server you deploy.
 
 ### 7. Run the pipeline
 Trigger the `weather_etl` DAG from the Airflow UI at `http://localhost:8080`
@@ -161,9 +176,33 @@ streamlit run dashboard.py
 
 ---
 
+## ☁️ Deployment (AWS EC2)
+
+The pipeline runs on a Linux AWS EC2 instance, with Airflow, the FastAPI service, and the Streamlit dashboard managed together through Docker Compose.
+
+**Overview**
+1. Launch an EC2 instance (Linux) and install Docker and Docker Compose.
+2. Clone the repo and create a `.env` file with your API keys and database settings (point `DB_HOST` at your managed PostgreSQL instance, e.g. Neon, or a Postgres container).
+3. Start the services:
+   ```bash
+   docker compose up -d
+   ```
+4. Open the Airflow UI and enable the `weather_etl` DAG. It then runs automatically every 2 hours.
+5. Configure the instance's **security group** so only the ports you need are reachable, and restrict the Airflow UI to your own IP rather than the open internet.
+
+**Operations**
+- DAG failures are diagnosed through the task logs in the Airflow UI.
+- Check service status and logs with `docker compose ps` and `docker compose logs <service>`.
+
+**Security notes**
+- Never commit `.env` or API keys. Use `.env.example` as the template.
+- Do not expose the Airflow UI publicly without authentication and an IP restriction.
+
+---
+
 ## 🔌 API Endpoints
 
-Base URL: `http://127.0.0.1:8000`
+Base URL (local): `http://127.0.0.1:8000`
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -209,5 +248,5 @@ Alerts are generated automatically based on metric thresholds:
 ### Airflow DAG
 [![Airflow DAG Demo](https://img.youtube.com/vi/k_4H9EL21I4/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_4H9EL21I4)
 
-### 🔴 Heat Warning Example 
+### 🔴 Heat Warning Example
 [![Heat Warning Example](https://img.youtube.com/vi/kU50Ca5e394/0.jpg)](https://www.youtube.com/watch?v=kU50Ca5e394)
