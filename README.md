@@ -8,25 +8,7 @@ An automated weather data pipeline that fetches live weather data for global cit
 
 ## 🏗️ Architecture
 
-```
-OpenWeatherMap API
-       │
-       ▼
-  [Extract] ──► Raw weather data (temp, humidity, pressure, wind, precipitation)
-       │
-       ▼
-  [Transform] ──► Clean & structure data, detect weather conditions
-       │
-       ▼
-  [Load] ──► PostgreSQL (all_city_weather_data)
-       │
-       ▼
-  [Gemini LLM] ──► AI-generated multilingual summaries ──► PostgreSQL (gemini_prompt)
-       │
-       ├──► FastAPI  ──► REST endpoints (/weather, /weather/{city}, /weather/{city}/summary)
-       │
-       └──► Streamlit Dashboard ──► Live weather cards, alerts, multilingual TTS
-```
+<img width="1408" height="768" alt="image_6490b041 (1)" src="https://github.com/user-attachments/assets/443444ef-ac10-4c13-af74-d59dd629ccd0" />
 
 Orchestrated end-to-end by **Apache Airflow**, scheduled every 2 hours.
 
