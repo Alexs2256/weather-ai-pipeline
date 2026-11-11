@@ -2,233 +2,55 @@
 
 [![Live Demo](https://img.shields.io/badge/Streamlit-Live%20Demo-red?style=for-the-badge&logo=streamlit)](https://weather-ai-pipeline-qhr9ghvc5zcefnmgqyuz7p.streamlit.app/)
 
-An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard. Orchestrated with Apache Airflow and deployed on AWS EC2 with Docker Compose.
+An automated weather data pipeline that fetches live weather data for global cities, generates AI-powered summaries using Google Gemini, detects severe weather alerts, and exposes the data through a REST API and interactive dashboard, orchestrated with Apache Airflow and deployed on AWS EC2 with Docker Compose.
 
 ---
 
 ## 🏗️ Architecture
 
-<img width="1408" height="768" alt="image_6490b041 (1)" src="https://github.com/user-attachments/assets/443444ef-ac10-4c13-af74-d59dd629ccd0" />
+<img width="1408" height="768" alt="Weather AI Data Pipeline Architecture" src="https://github.com/user-attachments/assets/443444ef-ac10-4c13-af74-d59dd629ccd0" />
 
-Orchestrated end-to-end by **Apache Airflow**, scheduled every 2 hours.
-
-### Deployment architecture
-
-```
-AWS EC2 (Linux, Docker Compose)
-  ├── Apache Airflow (scheduler + webserver) ──► runs the weather_etl DAG every 2 hours
-  ├── FastAPI service
-  └── Streamlit service
-          │
-          ▼
-  Managed PostgreSQL (Neon)  ◄── also used by the Streamlit Cloud live demo
-```
+Orchestrated end-to-end by **Apache Airflow** and scheduled every 2 hours via a containerized AWS EC2 Linux setup connecting to a managed PostgreSQL database (Neon).
 
 ---
 
 ## ✨ Features
 
-- **ETL Pipeline** — Extracts live weather data from OpenWeatherMap for London, New York, Tokyo, and Berlin
-- **AI Summaries** — Google Gemini generates natural language weather reports, written in the local language first then translated to English, with structured output validation (Pydantic) and automatic model fallback
-- **Weather Alert System** — Multi-signal detection for heat, frost, blizzard, fire weather, high winds, humidity, and storm conditions
-- **Storm Detection** — Pressure drop analysis over 3-hour historical windows to detect incoming storms
-- **FastAPI REST API** — Three endpoints to query current weather and AI summaries programmatically
-- **Streamlit Dashboard** — Live weather cards with country flags, condition icons, and alert banners
-- **Multilingual TTS** — Browser-based text-to-speech reads summaries in Japanese (Tokyo), German (Berlin), British English (London), and American English (New York)
-- **Cloud deployment** — Airflow, FastAPI, and Streamlit run on an AWS EC2 Linux server using Docker Compose
-- **Docker** — PostgreSQL runs in a Docker container for easy local setup
+- **ETL Pipeline & AI Summaries:** Gathers live data from OpenWeatherMap for major cities and produces translated, Pydantic-validated reports using Google Gemini.
+- **Alert & Storm Detection:** Real-time multi-signal evaluation for extreme heat, frost, blizzards, fire weather, high winds, humidity, and 3-hour pressure-drop storm tracking.
+- **APIs & Dashboards:** Built-in FastAPI REST endpoints, a Streamlit live dashboard with alert banners, and browser-based multilingual Text-to-Speech (TTS).
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Structure
 
-| Layer | Technology |
-|---|---|
-| Orchestration | Apache Airflow |
-| Data Source | OpenWeatherMap API |
-| Database | PostgreSQL (Docker locally, Neon managed in the cloud) |
-| LLM | Google Gemini 2.5 Flash |
-| Validation | Pydantic |
-| API | FastAPI + Uvicorn |
-| Dashboard | Streamlit |
-| Cloud / Deployment | AWS EC2, Docker Compose |
-| Language | Python 3.10 |
-| Packaging | pyproject.toml |
+*   **Orchestration & Backend:** Apache Airflow, Python 3.10, FastAPI, Uvicorn, Pydantic.
+*   **Data & AI:** OpenWeatherMap API, Google Gemini 2.5 Flash, PostgreSQL (Docker/Neon).
+*   **Deployment:** AWS EC2, Docker Compose, Streamlit.
+
+Core repository layout includes `dags/weather_etl_dag.py`, modular extraction/transformation plugins, FastAPI (`api.py`), and the Streamlit interface (`dashboard.py`).
 
 ---
 
-## 📁 Project Structure
+## ⚙️ Local Setup & Deployment
 
-```
-weather-ai-pipeline/
-├── dags/
-│   └── weather_etl_dag.py       # Airflow DAG definition
-├── plugins/
-│   └── weather_pipeline/
-│       ├── extract.py           # Fetches data from OpenWeatherMap
-│       ├── transform.py         # Cleans and structures data
-│       ├── load.py              # Loads data into PostgreSQL
-│       ├── weather_prediction.py # Gemini LLM summaries + alert logic
-│       └── settings.py          # Environment variable config
-├── api.py                       # FastAPI REST API
-├── dashboard.py                 # Streamlit dashboard
-├── pyproject.toml
-├── requirements.txt
-└── .env.example
-```
+1.  **Clone & Environment:** Clone the repository, create a Python 3.10 virtual environment, and install dependencies via `requirements.txt` and `pip install -e .`.
+2.  **Configuration:** Copy `.env.example` to `.env` and configure your OpenWeatherMap API key, Gemini API key, and PostgreSQL credentials.
+3.  **Services & Execution:** Launch PostgreSQL via Docker, initialize Apache Airflow (`admin/admin` for local testing), start the Airflow scheduler/webserver, and trigger the `weather_etl` DAG at `http://localhost:8080`.
+4.  **Run Interfaces:** Start the FastAPI server using `uvicorn api:app --reload` and launch the dashboard with `streamlit run dashboard.py`.
+5.  **AWS EC2 Production:** For cloud deployments, provision a Linux EC2 instance, populate your environment variables pointing `DB_HOST` to a managed database like Neon, and spin up services using `docker compose up -d`. Ensure security groups restrict public exposure of the Airflow UI.
 
 ---
 
-## ⚙️ Local Setup
+## 🔌 API Endpoints & Alert Thresholds
 
-### Prerequisites
-- Python 3.10+
-- Docker
-- Apache Airflow
-- OpenWeatherMap API key (free at [openweathermap.org](https://openweathermap.org))
-- Google Gemini API key (free at [aistudio.google.com](https://aistudio.google.com))
-
-### 1. Clone the repo
-```bash
-git clone https://github.com/Alexs2256/weather-ai-pipeline.git
-cd weather-ai-pipeline
-```
-
-### 2. Create and activate a virtual environment
-```bash
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-```
-
-### 3. Install dependencies
-```bash
-pip install -r requirements.txt
-pip install -e .
-```
-
-### 4. Set up environment variables
-```bash
-cp .env.example .env
-```
-Fill in your `.env`:
-```
-API_KEY=your_openweathermap_api_key
-GEMINI_KEY=your_gemini_api_key
-DB_HOST=localhost
-DB_NAME=weather_db
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_PORT=5432
-```
-
-### 5. Start PostgreSQL with Docker
-```bash
-docker run --name postgres-weather \
-  -e POSTGRES_PASSWORD=your_password \
-  -e POSTGRES_DB=weather_db \
-  -p 5432:5432 \
-  -d postgres
-```
-
-### 6. Set up Airflow
-```bash
-export AIRFLOW_HOME=$(pwd)
-airflow db init
-airflow users create \
-  --username admin --password admin \
-  --firstname Admin --lastname User \
-  --role Admin --email admin@example.com
-airflow scheduler &
-airflow webserver &
-```
-> The `admin/admin` credentials are for local development only. Use a strong password on any server you deploy.
-
-### 7. Run the pipeline
-Trigger the `weather_etl` DAG from the Airflow UI at `http://localhost:8080`
-
-### 8. Start the API
-```bash
-uvicorn api:app --reload
-```
-
-### 9. Start the dashboard
-```bash
-streamlit run dashboard.py
-```
-
----
-
-## ☁️ Deployment (AWS EC2)
-
-The pipeline runs on a Linux AWS EC2 instance, with Airflow, the FastAPI service, and the Streamlit dashboard managed together through Docker Compose.
-
-**Overview**
-1. Launch an EC2 instance (Linux) and install Docker and Docker Compose.
-2. Clone the repo and create a `.env` file with your API keys and database settings (point `DB_HOST` at your managed PostgreSQL instance, e.g. Neon, or a Postgres container).
-3. Start the services:
-   ```bash
-   docker compose up -d
-   ```
-4. Open the Airflow UI and enable the `weather_etl` DAG. It then runs automatically every 2 hours.
-5. Configure the instance's **security group** so only the ports you need are reachable, and restrict the Airflow UI to your own IP rather than the open internet.
-
-**Operations**
-- DAG failures are diagnosed through the task logs in the Airflow UI.
-- Check service status and logs with `docker compose ps` and `docker compose logs <service>`.
-
-**Security notes**
-- Never commit `.env` or API keys. Use `.env.example` as the template.
-- Do not expose the Airflow UI publicly without authentication and an IP restriction.
-
----
-
-## 🔌 API Endpoints
-
-Base URL (local): `http://127.0.0.1:8000`
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/weather` | Current weather for all cities |
-| GET | `/weather/{city}` | Current weather for a specific city |
-| GET | `/weather/{city}/summary` | Gemini AI summary for a specific city |
-
-Interactive docs available at: `http://127.0.0.1:8000/docs`
-
-### Example Response — `/weather/London`
-```json
-{
-  "city": "London",
-  "temperature": 18.5,
-  "humidity": 72,
-  "pressure": 1015,
-  "wind_speed": 4.47,
-  "timestamp": "2026-06-24 20:00:07"
-}
-```
-
----
-
-## 🚨 Weather Alert System
-
-Alerts are generated automatically based on metric thresholds:
-
-| Alert | Condition |
-|---|---|
-| 🔴 Heat Warning | Temp > 35°C |
-| 🔴 Extreme Heat Warning | Temp > 35°C + Humidity > 80% |
-| 🔴 Fire Weather Warning | Temp > 35°C + Wind > 20mph + Humidity < 25% |
-| 🔴 Blizzard Warning | Temp < 0°C + Wind > 35mph |
-| 🟠 Frost Warning | Temp < 0°C |
-| 🟠 High Wind Warning | Wind > 40mph |
-| 🔴 Storm Alert | Pressure drop ≥ 3hPa over 3 hours |
-| 🔵 High Humidity Alert | Humidity > 80% |
+*   **API Base URL (`http://127.0.0.1:8000`):** Access `/weather` (all cities), `/weather/{city}` (specific city), and `/weather/{city}/summary` (AI-generated reports), with interactive documentation available at `/docs`.
+*   **Alert Rules:** Triggers automated warnings for Heat (>35°C), Extreme Heat (>35°C + >80% humidity), Fire Weather, Blizzards, Frost, High Winds (>40mph), High Humidity, and Storms (≥3 hPa pressure drop over 3 hours).
 
 ---
 
 ## 📸 Demo
 
-### Airflow DAG
-[![Airflow DAG Demo](https://img.youtube.com/vi/k_4H9EL21I4/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_4H9EL21I4)
-
-### 🔴 Heat Warning Example
-[![Heat Warning Example](https://img.youtube.com/vi/kU50Ca5e394/0.jpg)](https://www.youtube.com/watch?v=kU50Ca5e394)
+| Airflow DAG | 🔴 Heat Warning Example |
+|---|---|
+| [![Airflow DAG Demo](https://img.youtube.com/vi/k_4H9EL21I4/maxresdefault.jpg)](https://www.youtube.com/watch?v=k_4H9EL21I4) | [![Heat Warning Example](https://img.youtube.com/vi/kU50Ca5e394/0.jpg)](https://www.youtube.com/watch?v=kU50Ca5e394) |
